@@ -15,6 +15,7 @@ const basicAuth = process.env.BASIC_AUTH
 const uri = 'umd.instructure.com/api/v1/users/self'
 const PREFIX = '?';
 
+
 bot.on('ready', function() {
     console.log("It's Working");
 });
