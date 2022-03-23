@@ -1,4 +1,4 @@
-//Modules
+//modules
 const axios = require('axios').default;
 const discord = require('discord.js');
 const bot = new discord.Client();
@@ -8,44 +8,60 @@ const Time = require('date-and-time');
 const request = require('request');
 const schedule = require('node-schedule');
 const dotenv = require('dotenv').config({
-  path: path.resolve('password.env'),
+    path: path.resolve('password.env'),
 });
 
-//Bot constants
+//bot constants
 const basicAuth = process.env.BASIC_AUTH
-const userID = process.env.userID
-const uri = 'umd.instructure.com/api/v1/users/self'
+const userID = process.env.USER_ID
+const uri = 'https://umd.instructure.com/api/v1'
 const PREFIX = '?';
-const uriAuth = "https://umd.instructure.com/login/oauth2/auth?client_id=XXX&response_type=code&redirect_uri=https://umd.instructure.com/courses/1323550"
 
-
-bot.on('ready', function() {
+bot.on('ready', function () {
     console.log("It's Working");
-    const channel = bot.channels.cache.get('955971828822704158')
+    const channel = bot.channels.get('955971828822704158')
 
-    schedule.scheduleJob('*/10 * * * * *', ()=> {
-        channel.send("Schedule: ")
-        axios.get('https://umd.instructure.com/api/v1/users/' + userID + '/graded_submissions', {headers: { 'Authorization': basicAuth}})
-        .then(res => {
-            for(assign of res.data) {
-                if(assign.hasOwnProperty("entered_grade")){
-                    
+    //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
+    schedule.scheduleJob('0 9 * * *', ()=> {
+        channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
+        axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
+            .then(res => {
+                for (assign of res.data) {
+                    if (assign.hasOwnProperty("entered_grade")) {
+                        const grade = assign.entered_grade
+                        const assignID = assign.assignment_id
+                        const assignURL = assign.preview_url
+                        const courseID = assignURL.substring(assignURL.indexOf("courses") + 8, assignURL.indexOf("courses") + 15)
+                        //msg.channel.send(courseID)
+                        axios.get('https://umd.instructure.com/api/v1/courses/' + courseID + '/assignments/' + assignID, { headers: { 'Authorization': basicAuth } })
+                            .then(resp => {
+                                //console.log(resp)
+                                const name = resp.data.name
+                                const max = resp.data.points_possible
+                                channel.send(name + ": " + grade + "/" + max)
+                                console.log(`statusCode: ${resp.status}`)
+                            })
+                            .catch(error => {
+                                console.error(error)
+                            });
+                    }
                 }
-            }
-            
-            console.log(`statusCode: ${res.status}`)
-        })
-        .catch(error => {
-            console.error(error)
-        });
 
-    schedule.scheduleJob('*/10 * * * * *', ()=> {
-        channel.send("Schedule: ")
-        axios.get('https://umd.instructure.com/api/v1/users/self/todo', {headers: { 'Authorization': basicAuth}})
+                console.log(`statusCode: ${res.status}`)
+            })
+            .catch(error => {
+                console.error(error)
+            });
+
+    })
+
+    //SHOWS ASSIGNMENTS TODO AT 9:30
+    schedule.scheduleJob('30 9 * * *', ()=> {
+        channel.send("𝐓𝐎-𝐃𝐎:")
+        axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
         .then(res => {
-            var key = "name"
             for(assign of res.data) {
-                if(assign.assignment.hasOwnProperty(key)) {
+                if(assign.assignment.hasOwnProperty("name")) {
                     if(assign.assignment.has_submitted_submissions == false) {
                         channel.send(assign.assignment.name)
                     }
@@ -57,116 +73,128 @@ bot.on('ready', function() {
         .catch(error => {
             console.error(error)
         });
+    })
     
+    
+
 });
 
 
+bot.on('message', function (msg) {
 
-bot.on('message', function(msg) {
-    
     let args = msg.content.substring(PREFIX.length).split(" "); //returns the text after the prefix
     var arg = ((args[0].toString()).toLowerCase());
-/*
-    schedule.scheduleJob('0 9 * * *', ()=> {
-        msg.channel.send("Schedule: ")
-
-    });
-*/
-    if(msg.content.charAt(0) != PREFIX) {
+ 
+    if (msg.content.charAt(0) != PREFIX) {
         return;
     }
 
-
-    if(arg == 'missing') {
-        msg.channel.send("🅜🅘🅢🅢🅘🅝🅖")
-        msg.channel.send("____________")
-        axios.get('https://umd.instructure.com/api/v1/users/' + userID + '/missing_submissions', {headers: { 'Authorization': basicAuth}})
+    //RETURNS ASSIGNMENTS TODO
+    if (arg == 'todo') {
+        msg.channel.send("𝐓𝐎-𝐃𝐎:")
+        axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
         .then(res => {
-            //console.log(res.data)
-            var key = "name"
             for(assign of res.data) {
-                if(assign.assignment.hasOwnProperty(key)) {
+                if(assign.assignment.hasOwnProperty("name")) {
                     if(assign.assignment.has_submitted_submissions == false) {
                         msg.channel.send(assign.assignment.name)
-
                     }
                 }
-               
             }
             console.log(`statusCode: ${res.status}`)
-          })
-          .catch(error => {
+        })
+        .catch(error => {
             console.error(error)
-          });
-            
+        });
+
     }
 
-    if (arg =='destroy') {
+    //RETURNS RECENTLY GRADED ASSIGNMENTS
+    if (arg == 'graded') {
+        msg.channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
+        axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
+            .then(res => {
+                for (assign of res.data) {
+                    if (assign.hasOwnProperty("entered_grade")) {
+                        const grade = assign.entered_grade
+                        const assignID = assign.assignment_id
+                        const assignURL = assign.preview_url
+                        const courseID = assignURL.substring(assignURL.indexOf("courses") + 8, assignURL.indexOf("courses") + 15)
+                        //msg.channel.send(courseID)
+                        axios.get('https://umd.instructure.com/api/v1/courses/' + courseID + '/assignments/' + assignID, { headers: { 'Authorization': basicAuth } })
+                            .then(resp => {
+                                //console.log(resp)
+                                const name = resp.data.name
+                                const max = resp.data.points_possible
+                                msg.channel.send(name + ": " + grade + "/" + max)
+                                console.log(`statusCode: ${resp.status}`)
+                            })
+                            .catch(error => {
+                                console.error(error)
+                            });
+                    }
+                }
+                console.log(`statusCode: ${res.status}`)
+            })
+            .catch(error => {
+                console.error(error)
+            });
+    }
+
+    //RETURNS MISSING ASSIGNMENTS 
+    if (arg == 'missing') {
+        const missing = true;
+        msg.channel.send("𝐌𝐈𝐒𝐒𝐈𝐍𝐆:")
+        axios.get(uri + '/users/' + userID + '/missing_submissions', { headers: { 'Authorization': basicAuth } })
+            .then(res => {
+                //console.log(res.data)
+                var key = "name"
+                for (assign of res.data) {
+                    if (assign.hasOwnProperty(key)) {
+                        if (assign.has_submitted_submissions == false) {
+                            if(assign.name) {
+                                missing = false
+                                msg.channel.send(assign.name)
+                            }
+                        }
+                    }
+
+                }
+                if(missing) {
+                    msg.channel.send("NONE")
+                }
+                console.log(`statusCode: ${res.status}`)
+            })
+            .catch(error => {
+                console.error(error)
+            });
+
+    }
+
+    //RESTARTS BOT CLIENT
+    if (arg == 'destroy') {
         msg.channel.send("Bot Restarting...")
         bot.destroy();
         bot.login(process.env.BOT_TOKEN);
     }
 
+    //TESTS BOT CLIENT
     if (arg == 'test') {
         msg.channel.send("Bot running");
     }
 
+    //LISTS BOT COMMANDS
     if (arg == 'help') {
-        msg.channel.send("Availible commands are (?date, ?test, ?git) and some question based commands for fun!");
-    }
+        msg.channel.send("Availible commands are:");
+        msg.channel.send("?todo, ?graded, ?missing, ?test, ?destroy")
+        msg.channel.send("At 9:00EST the bot will post your most recently graded assignmnets")
+        msg.channel.send("At 9:30EST the bot will post your most recently graded assignmnets")
 
-    if (arg == 'git') {
-        msg.channel.send("https://github.com/amruth21")
     }
-
-    if (arg == "who" || arg == "whose" || arg == "which") {
-        //msg.channel.send("testing");
-        var GuildMembers = msg.guild.members;
-        //console.log(lengthy);
-        var mems = [];
-        var nicks = GuildMembers.map(g => g.nickname)
-        var lengthy = nicks.length;
-        var i;
-        for (i = 0; lengthy > i; i++) {
-            if (typeof(nicks[i]) === "string") {
-                //console.log("test");
-                if (nicks[i] != "oRgAnIc BeAnA" && nicks[i] != "irrelevant") {
-                    mems.push(nicks[i]);
-                }
-            }
-        }
-        console.log(mems);
-        var person = mems[Math.floor(Math.random() * mems.length)];
-        msg.channel.send(person);
-    }
-
-    if (arg == "is" || arg == "will" || arg == "did") {
-        var answer;
-        if (Math.floor(Math.random() * 10) >= 5) {
-            answer = "yes";
-        } else {
-            answer = "no";
-        }
-        msg.channel.send(answer);
-    }
-    
 
 });
 
 bot.login(process.env.BOT_TOKEN);
 
 
-/*
-var filePath = path.join(__dirname, 'secret.txt'); //sike u aint getting that
-var token = fs.readFileSync(filePath, "utf8");
-
-fs.readFile(filePath, 'utf8', function(err, contents) {
-    if(err){
-        console.log('error!');
-    }
-    else{ 
-        token = contents;
-        console.log(contents);
-    }
-});
-*/
+ 
