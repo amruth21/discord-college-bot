@@ -47,6 +47,7 @@ bot.on('ready', function () {
                                 const name = resp.data.name
                                 const max = resp.data.points_possible
                                 channel.send(name + ": " + grade + "/" + max)
+                                console.log("joB : " + grade)
                                 console.log(`statusCode: ${resp.status}`)
                             })
                             .catch(error => {
@@ -71,6 +72,7 @@ bot.on('ready', function () {
             for(assign of res.data) {
                 if(assign.assignment.hasOwnProperty("name")) {
                     if(assign.assignment.has_submitted_submissions == false) {
+                        console.log(assign.assignment.name + "JOBBB)
                         channel.send(assign.assignment.name)
                     }
                 }
