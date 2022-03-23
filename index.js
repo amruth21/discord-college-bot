@@ -3,7 +3,7 @@ const axios = require('axios').default;
 const discord = require('discord.js');
 //const bot = new discord.Client();
 //const { Client, Intents } = require('discord.js');
-
+var CronJob = require('cron').CronJob;
 const bot = new discord.Client({
     intents: [
         discord.Intents.FLAGS.GUILDS,
@@ -29,7 +29,65 @@ bot.on('ready', function () {
     console.log("It's Working");
     const channel = bot.channels.cache.get('955971828822704158')
 
+
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
+    var jobGr = new CronJob('39 11 * * *', ()=> {
+        channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
+        axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
+            .then(res => {
+                for (assign of res.data) {
+                    if (assign.hasOwnProperty("entered_grade")) {
+                        const grade = assign.entered_grade
+                        const assignID = assign.assignment_id
+                        const assignURL = assign.preview_url
+                        const courseID = assignURL.substring(assignURL.indexOf("courses") + 8, assignURL.indexOf("courses") + 15)
+                        //msg.channel.send(courseID)
+                        axios.get('https://umd.instructure.com/api/v1/courses/' + courseID + '/assignments/' + assignID, { headers: { 'Authorization': basicAuth } })
+                            .then(resp => {
+                                //console.log(resp)
+                                const name = resp.data.name
+                                const max = resp.data.points_possible
+                                channel.send(name + ": " + grade + "/" + max)
+                                console.log(`statusCode: ${resp.status}`)
+                            })
+                            .catch(error => {
+                                console.error(error)
+                            });
+                    }
+                }
+
+                console.log(`statusCode: ${res.status}`)
+            })
+            .catch(error => {
+                console.error(error)
+            });
+
+    })
+    jobGr.start();
+
+    //SHOWS ASSIGNMENTS TODO AT 9:30
+    var jobTD = new CronJob('40 11 * * *', ()=> {
+        channel.send("𝐓𝐎-𝐃𝐎:")
+        axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
+        .then(res => {
+            for(assign of res.data) {
+                if(assign.assignment.hasOwnProperty("name")) {
+                    if(assign.assignment.has_submitted_submissions == false) {
+                        channel.send(assign.assignment.name)
+                    }
+                }
+               
+            }
+            console.log(`statusCode: ${res.status}`)
+        })
+        .catch(error => {
+            console.error(error)
+        });
+    })
+    jobTD.start()
+
+
+    /*
     schedule.scheduleJob('0 9 * * *', ()=> {
         channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
         axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
@@ -84,6 +142,7 @@ bot.on('ready', function () {
             console.error(error)
         });
     })
+    */
     
     
 
@@ -101,7 +160,7 @@ bot.on('messageCreate', function (msg) {
 
     //RETURNS ASSIGNMENTS TODO
     if (arg == 'todo') {
-        msg.channel.send("𝐓𝐎-𝐃𝐎:")
+        msg.channel.send("𝐓𝐎-𝐃𝐎:jjj")
         axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
         .then(res => {
             for(assign of res.data) {
