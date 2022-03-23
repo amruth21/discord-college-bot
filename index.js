@@ -6,33 +6,81 @@ const fs = require('fs');
 const path = require('path');
 const Time = require('date-and-time');
 const request = require('request');
+const schedule = require('node-schedule');
 const dotenv = require('dotenv').config({
   path: path.resolve('password.env'),
 });
 
 //Bot constants
 const basicAuth = process.env.BASIC_AUTH
+const userID = process.env.userID
 const uri = 'umd.instructure.com/api/v1/users/self'
 const PREFIX = '?';
+const uriAuth = "https://umd.instructure.com/login/oauth2/auth?client_id=XXX&response_type=code&redirect_uri=https://umd.instructure.com/courses/1323550"
 
 
 bot.on('ready', function() {
     console.log("It's Working");
+    const channel = bot.channels.cache.get('955971828822704158')
+
+    schedule.scheduleJob('*/10 * * * * *', ()=> {
+        channel.send("Schedule: ")
+        axios.get('https://umd.instructure.com/api/v1/users/' + userID + '/graded_submissions', {headers: { 'Authorization': basicAuth}})
+        .then(res => {
+            for(assign of res.data) {
+                if(assign.hasOwnProperty("entered_grade")){
+                    
+                }
+            }
+            
+            console.log(`statusCode: ${res.status}`)
+        })
+        .catch(error => {
+            console.error(error)
+        });
+
+    schedule.scheduleJob('*/10 * * * * *', ()=> {
+        channel.send("Schedule: ")
+        axios.get('https://umd.instructure.com/api/v1/users/self/todo', {headers: { 'Authorization': basicAuth}})
+        .then(res => {
+            var key = "name"
+            for(assign of res.data) {
+                if(assign.assignment.hasOwnProperty(key)) {
+                    if(assign.assignment.has_submitted_submissions == false) {
+                        channel.send(assign.assignment.name)
+                    }
+                }
+               
+            }
+            console.log(`statusCode: ${res.status}`)
+        })
+        .catch(error => {
+            console.error(error)
+        });
+    
 });
+
 
 
 bot.on('message', function(msg) {
     
     let args = msg.content.substring(PREFIX.length).split(" "); //returns the text after the prefix
     var arg = ((args[0].toString()).toLowerCase());
+/*
+    schedule.scheduleJob('0 9 * * *', ()=> {
+        msg.channel.send("Schedule: ")
+
+    });
+*/
     if(msg.content.charAt(0) != PREFIX) {
         return;
     }
 
+
     if(arg == 'missing') {
         msg.channel.send("🅜🅘🅢🅢🅘🅝🅖")
         msg.channel.send("____________")
-        axios.get('https://umd.instructure.com/api/v1/users/self/todo', {headers: { 'Authorization': basicAuth}})
+        axios.get('https://umd.instructure.com/api/v1/users/' + userID + '/missing_submissions', {headers: { 'Authorization': basicAuth}})
         .then(res => {
             //console.log(res.data)
             var key = "name"
@@ -52,6 +100,7 @@ bot.on('message', function(msg) {
           });
             
     }
+
     if (arg =='destroy') {
         msg.channel.send("Bot Restarting...")
         bot.destroy();
