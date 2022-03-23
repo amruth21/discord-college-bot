@@ -30,7 +30,7 @@ bot.on('ready', function () {
     const channel = bot.channels.cache.get('955971828822704158')
 
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
-    schedule.scheduleJob('0 9 * * *', ()=> {
+    schedule.scheduleJob('54 9 * * *', ()=> {
         channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
         axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
             .then(res => {
