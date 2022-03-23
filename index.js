@@ -1,7 +1,15 @@
 //modules
 const axios = require('axios').default;
 const discord = require('discord.js');
-const bot = new discord.Client();
+//const bot = new discord.Client();
+//const { Client, Intents } = require('discord.js');
+
+const bot = new discord.Client({
+    intents: [
+        discord.Intents.FLAGS.GUILDS,
+        discord.Intents.FLAGS.GUILD_MESSAGES
+    ]
+});
 const fs = require('fs');
 const path = require('path');
 const Time = require('date-and-time');
@@ -19,7 +27,7 @@ const PREFIX = '?';
 
 bot.on('ready', function () {
     console.log("It's Working");
-    const channel = bot.channels.get('955971828822704158')
+    const channel = bot.channels.cache.get('955971828822704158')
 
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
     schedule.scheduleJob('0 9 * * *', ()=> {
