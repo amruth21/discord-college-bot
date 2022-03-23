@@ -30,7 +30,7 @@ bot.on('ready', function () {
     const channel = bot.channels.cache.get('955971828822704158')
 
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
-    schedule.scheduleJob('33 10 * * *', ()=> {
+    schedule.scheduleJob('35 10 * * *', ()=> {
         channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
         axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
             .then(res => {
@@ -65,14 +65,14 @@ bot.on('ready', function () {
     })
 
     //SHOWS ASSIGNMENTS TODO AT 9:30
-    schedule.scheduleJob('34 10 * * *', ()=> {
+    schedule.scheduleJob('36 10 * * *', ()=> {
         channel.send("𝐓𝐎-𝐃𝐎:")
         axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
         .then(res => {
             for(assign of res.data) {
                 if(assign.assignment.hasOwnProperty("name")) {
                     if(assign.assignment.has_submitted_submissions == false) {
-                        console.log(assign.assignment.name + "JOBBB)
+                        console.log(assign.assignment.name + "JOBBB")
                         channel.send(assign.assignment.name)
                     }
                 }
