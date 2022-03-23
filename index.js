@@ -32,7 +32,7 @@ bot.on('ready', function () {
 
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
 
-    var jobGr = new CronJob('51 15 * * *', ()=> {
+    var jobGr = new CronJob('0 13 * * *', ()=> { //SET AS 13:00 BECAUSE OF HEROKU SERVERS
         channel.send("𝐆𝐑𝐀𝐃𝐄𝐃:")  
         axios.get(uri + '/users/' + userID + '/graded_submissions', { headers: { 'Authorization': basicAuth } })
             .then(res => {
@@ -67,7 +67,7 @@ bot.on('ready', function () {
     jobGr.start();
 
     //SHOWS ASSIGNMENTS TODO AT 9:30
-    var jobTD = new CronJob('50 15 * * *', ()=> {
+    var jobTD = new CronJob('30 13 * * *', ()=> { //SET AS 13:30 BECAUSE OF HEROKU SERVERS
 
         channel.send("𝐓𝐎-𝐃𝐎:")
         axios.get(uri + '/users/self/todo', {headers: { 'Authorization': basicAuth}})
