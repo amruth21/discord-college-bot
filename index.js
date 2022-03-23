@@ -90,7 +90,7 @@ bot.on('ready', function () {
 });
 
 
-bot.on('message', function (msg) {
+bot.on('messageCreate', function (msg) {
 
     let args = msg.content.substring(PREFIX.length).split(" "); //returns the text after the prefix
     var arg = ((args[0].toString()).toLowerCase());
