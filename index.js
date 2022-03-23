@@ -197,8 +197,8 @@ bot.on('messageCreate', function (msg) {
     if (arg == 'help') {
         msg.channel.send("Availible commands are:");
         msg.channel.send("?todo, ?graded, ?missing, ?test, ?destroy")
-        msg.channel.send("At 9:00EST the bot will post your most recently graded assignmnets")
-        msg.channel.send("At 9:30EST the bot will post your most recently graded assignmnets")
+        msg.channel.send("At 9:00EST the bot will post your most recently graded assignments")
+        msg.channel.send("At 9:30EST the bot will post your assignments to do")
 
     }
 
