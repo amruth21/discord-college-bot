@@ -27,7 +27,7 @@ const PREFIX = '?';
 
 bot.on('ready', function () {
     console.log("It's Working");
-    const channel = bot.channels.cache.get('955971828822704158')
+    const channel = bot.channels.cache.get('955971828822704158') //replace with respective discord channel id
 
 
     //SHOWS RECENTLY GRADED ASSIGNMENTS AT 9:00
