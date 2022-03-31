@@ -1,5 +1,5 @@
 # discord-college-bot
-A discord programmed using Node.js to handle various commands for UMD college students
+A discord bot programmed using Node.js to handle various commands for UMD college students
 
 
 ![alt text](https://img.shields.io/github/languages/top/amruth21/discord-college-bot "test") 
